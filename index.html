@@ -1030,14 +1030,34 @@ function renderAboutFeatures(){
 // ════ SITE CONFIG ════
 function applySiteConfig(){
   const c = siteConfig;
-  if(c.name) document.getElementById('siteNameNav').innerHTML = c.name.slice(0,-2)+'<span>'+c.name.slice(-2)+'</span>';
-  if(c.addr) document.getElementById('contactAddr').textContent = c.addr;
-  if(c.tel) document.getElementById('contactTel').textContent = c.tel;
-  if(c.email) document.getElementById('contactEmail').textContent = c.email;
-  if(c.footerDesc) document.getElementById('footerDesc').textContent = c.footerDesc;
-  if(c.footerEmail) document.getElementById('footerEmail').textContent = c.footerEmail;
-  if(c.footerTel) document.getElementById('footerTel').textContent = c.footerTel;
-  if(c.primaryColor){document.documentElement.style.setProperty('--leaf',c.primaryColor);}
+  const setEl = (id, val) => { const el=document.getElementById(id); if(el&&val) el.textContent=val; };
+  const setIn = (id, val) => { const el=document.getElementById(id); if(el&&val) el.value=val; };
+  // 導覽列名稱
+  if(c.name){
+    const nav=document.getElementById('siteNameNav');
+    if(nav) nav.innerHTML=c.name.slice(0,-2)+'<span>'+c.name.slice(-2)+'</span>';
+    const fl=document.querySelector('.footer-brand .logo');
+    if(fl) fl.textContent='🌿 '+c.name;
+    document.title=c.name+' | '+(c.slogan||'綠能・永續・未來');
+  }
+  // 聯絡資訊
+  setEl('contactAddr',  c.addr);
+  setEl('contactTel',   c.tel);
+  setEl('contactEmail', c.email);
+  setEl('footerDesc',   c.footerDesc);
+  setEl('footerEmail',  c.email);
+  setEl('footerTel',    c.tel);
+  // 主色
+  if(c.primaryColor) document.documentElement.style.setProperty('--leaf',c.primaryColor);
+  // 後台欄位同步
+  setIn('siteName',     c.name);
+  setIn('siteFullName', c.fullname);
+  setIn('siteSlogan',   c.slogan);
+  setIn('siAddr',       c.addr);
+  setIn('siTel',        c.tel);
+  setIn('siEmail',      c.email);
+  setIn('siLine',       c.line);
+  setIn('siFooter',     c.footerDesc);
 }
 
 // ════ PRODUCTS ════
@@ -1361,19 +1381,53 @@ window.saveAbout = async()=>{
 
 // SITE INFO SAVE
 window.saveSiteInfo = async()=>{
-  const name=document.getElementById('siteName').value;
-  const primaryColor=document.querySelector('.color-swatch.selected')?.dataset.color;
-  await update(ref(db,'config/site'),{name,fullname:document.getElementById('siteFullName').value,slogan:document.getElementById('siteSlogan').value,primaryColor});
-  toast('✅ 公司資訊已更新');
+  const name = document.getElementById('siteName').value.trim();
+  const fullname = document.getElementById('siteFullName').value.trim();
+  const slogan = document.getElementById('siteSlogan').value.trim();
+  const primaryColor = document.querySelector('.color-swatch.selected')?.dataset.color;
+  await update(ref(db,'config/site'),{name, fullname, slogan, primaryColor});
+  // 即時更新前台
+  if(name){
+    document.getElementById('siteNameNav').innerHTML = name.slice(0,-2)+'<span>'+name.slice(-2)+'</span>';
+    // 更新頁腳 logo
+    const footerLogo = document.querySelector('.footer-brand .logo');
+    if(footerLogo) footerLogo.textContent = '🌿 '+name;
+    // 更新頁面 title
+    document.title = name + ' | ' + (slogan || '綠能・永續・未來');
+  }
+  if(primaryColor) document.documentElement.style.setProperty('--leaf', primaryColor);
+  toast('✅ 公司資訊已更新，前台即時生效！');
 };
+
 window.saveContactInfo = async()=>{
-  await update(ref(db,'config/site'),{
-    addr:document.getElementById('siAddr').value,
-    tel:document.getElementById('siTel').value,
-    email:document.getElementById('siEmail').value,
-    footerDesc:document.getElementById('siFooter').value,
-  });
-  toast('✅ 聯絡資訊已更新');
+  const addr  = document.getElementById('siAddr').value.trim();
+  const tel   = document.getElementById('siTel').value.trim();
+  const email = document.getElementById('siEmail').value.trim();
+  const line  = document.getElementById('siLine').value.trim();
+  const footerDesc = document.getElementById('siFooter').value.trim();
+  await update(ref(db,'config/site'),{addr, tel, email, line, footerDesc});
+  // 即時更新前台所有顯示位置
+  if(addr){
+    const el = document.getElementById('contactAddr');
+    if(el) el.textContent = addr;
+  }
+  if(tel){
+    const el = document.getElementById('contactTel');
+    if(el) el.textContent = tel;
+    const ft = document.getElementById('footerTel');
+    if(ft) ft.textContent = tel;
+  }
+  if(email){
+    const el = document.getElementById('contactEmail');
+    if(el) el.textContent = email;
+    const fe = document.getElementById('footerEmail');
+    if(fe) fe.textContent = email;
+  }
+  if(footerDesc){
+    const el = document.getElementById('footerDesc');
+    if(el) el.textContent = footerDesc;
+  }
+  toast('✅ 聯絡資訊已更新，前台即時生效！');
 };
 window.selectColor = (el)=>{
   document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
