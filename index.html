@@ -10,7 +10,7 @@
 <meta property="og:title" content="綠晨科技 | 綠能・永續・未來"/>
 <meta property="og:description" content="專業綠能解決方案，太陽能、儲能、碳中和顧問服務"/>
 <meta property="og:type" content="website"/>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"綠晨科技股份有限公司","description":"專業綠能解決方案提供商","url":"https://greentech.com.tw","contactPoint":{"@type":"ContactPoint","telephone":"+886-2-8888-8888","contactType":"customer service"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"新世光綠能科技股份有限公司","description":"專業綠能解決方案提供商","url":"https://www.coole-green.com.tw","contactPoint":{"@type":"ContactPoint","telephone":"+886-4-24631805","contactType":"customer service"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Sans:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet"/>
 
@@ -575,7 +575,7 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
     </div>
   </div>
   <div class="footer-bottom">
-    <p>© 2024 綠晨科技股份有限公司. All rights reserved.</p>
+    <p id="footerCopy">© 2024 新世光綠能科技股份有限公司. All rights reserved.</p>
     <span class="eco-badge">🌿 碳中和認證企業</span>
   </div>
 </footer>
@@ -666,7 +666,7 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
         <div class="admin-card">
           <h3>公司名稱與識別</h3>
           <div class="form-group"><label class="form-label">公司名稱（導覽列）</label><input class="inline-edit" id="siteName" value="綠晨科技"/></div>
-          <div class="form-group"><label class="form-label">公司全名</label><input class="inline-edit" id="siteFullName" value="綠晨科技股份有限公司"/></div>
+          <div class="form-group"><label class="form-label">公司全名</label><input class="inline-edit" id="siteFullName" value="新世光綠能科技股份有限公司"/></div>
           <div class="form-group"><label class="form-label">品牌 Slogan</label><input class="inline-edit" id="siteSlogan" value="綠能・永續・未來"/></div>
           <div class="form-group"><label class="form-label">網站主色系</label>
             <div class="color-row">
@@ -1007,7 +1007,7 @@ function initHero(){
       </div>
       <div class="slide-overlay"></div>
       <div class="hero-content">
-        <div class="hero-eyebrow"><div class="dot"></div>綠晨科技・專業綠能</div>
+        <div class="hero-eyebrow"><div class="dot"></div><span id="heroEyebrow">新世光綠能科技・專業綠能</span></div>
         <h1 class="hero-title">${s.title||'以綠能守護地球的未來'}</h1>
         <p class="hero-desc">${s.subtitle||'太陽能・風力・儲能・永續'}</p>
         <div class="hero-btns">
@@ -1096,13 +1096,20 @@ function applySiteConfig(){
   setEl('footerTel',    c.tel);
   // 主色
   if(c.primaryColor) document.documentElement.style.setProperty('--leaf',c.primaryColor);
-  // 會員頁面公司名稱同步
+  // 公司名稱同步到所有位置
   if(c.name){
+    // 會員頁面
     const authWrap = document.getElementById('authWrap');
-    if(authWrap) renderAuth(); // 重新渲染帶入最新公司名
+    if(authWrap) renderAuth();
     // 後台管理品牌名稱
     const adminBrand = document.querySelector('.admin-brand');
     if(adminBrand) adminBrand.textContent = '🌿 ' + c.name + ' 後台管理';
+    // 首頁輪播 eyebrow 標籤
+    const eyebrow = document.getElementById('heroEyebrow');
+    if(eyebrow) eyebrow.textContent = c.name + '・專業綠能';
+    // 頁腳版權
+    const copy = document.getElementById('footerCopy');
+    if(copy) copy.textContent = '© ' + new Date().getFullYear() + ' ' + (c.fullname || c.name + '股份有限公司') + '. All rights reserved.';
   }
   // 後台欄位同步
   setIn('siteName',     c.name);
