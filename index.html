@@ -475,8 +475,8 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
     <div class="section-wrap">
       <div class="section-header" style="text-align:center;">
         <div class="section-tag" style="justify-content:center;">會員中心</div>
-        <h2 class="section-title">歡迎<em>加入</em>我們</h2>
-        <p class="section-desc" style="margin:0 auto;">成為會員，享有專屬諮詢、優先服務與最新案例分享。</p>
+        <h2 class="section-title" id="memberTitle">歡迎<em>加入</em>我們</h2>
+        <p class="section-desc" style="margin:0 auto;" id="memberSubDesc">成為會員，享有專屬諮詢、優先服務與最新案例分享。</p>
       </div>
       <div class="form-wrap" id="authWrap"></div>
     </div>
@@ -777,15 +777,15 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
         <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:20px;">🔍 SEO 設定</h2>
         <div class="admin-card">
           <h3>搜尋引擎優化</h3>
-          <div class="form-group"><label class="form-label">頁面 Title</label><input class="inline-edit" id="seoTitle" value="綠晨科技 | 綠能・永續・未來"/></div>
-          <div class="form-group"><label class="form-label">Meta Description（建議 120-160 字）</label><textarea class="inline-edit" id="seoDesc" rows="2">綠晨科技致力於太陽能、風力發電與儲能系統解決方案，為台灣企業與家庭提供清潔能源，共創永續未來。</textarea></div>
-          <div class="form-group"><label class="form-label">關鍵字（逗號分隔）</label><input class="inline-edit" id="seoKeys" value="綠能科技,太陽能,風力發電,儲能系統,ESG,永續發展,台灣"/></div>
+          <div class="form-group"><label class="form-label">頁面 Title</label><input class="inline-edit" id="seoTitle" value="新世光綠能科技 | 綠能・永續・未來"/></div>
+          <div class="form-group"><label class="form-label">Meta Description（建議 120-160 字）</label><textarea class="inline-edit" id="seoDesc" rows="2">新世光綠能科技致力於太陽能、LED照明、充電樁與儲能系統解決方案，為台灣企業與家庭提供清潔能源，共創永續未來。</textarea></div>
+          <div class="form-group"><label class="form-label">關鍵字（逗號分隔）</label><input class="inline-edit" id="seoKeys" value="新世光綠能,新世光,coolo,綠能科技,太陽能,solar,太陽能屋頂,風力發電,儲能系統,ESG,永續發展,台灣,LED照明,LED燈,led燈管,充電樁"/></div>
           <div class="save-bar"><button class="btn-save" onclick="saveSEO()">💾 儲存 SEO 設定</button></div>
           <div style="margin-top:16px;padding:14px;background:var(--off);border-radius:8px;font-size:0.82rem;color:var(--text2);">
             <strong>Google 搜尋預覽：</strong><br/>
-            <div style="color:#1a0dab;margin-top:6px;font-size:0.9rem;" id="seoPreviewTitle">綠晨科技 | 綠能・永續・未來</div>
+            <div style="color:#1a0dab;margin-top:6px;font-size:0.9rem;" id="seoPreviewTitle">新世光綠能科技 | 綠能・永續・未來</div>
             <div style="color:#006621;font-size:0.78rem;">greentech.com.tw</div>
-            <div style="color:var(--text2);font-size:0.82rem;margin-top:2px;" id="seoPreviewDesc">綠晨科技致力於太陽能、風力發電與儲能系統解決方案...</div>
+            <div style="color:var(--text2);font-size:0.82rem;margin-top:2px;" id="seoPreviewDesc">新世光綠能科技致力於太陽能、LED照明、充電樁與儲能系統解決方案...</div>
           </div>
         </div>
       </div>
@@ -891,6 +891,32 @@ const defaultNews = [
 
 // ════ FIREBASE WATCHERS ════
 function watchDB() {
+  // SEO config
+  onValue(ref(db,'config/seo'), snap=>{
+    const s = snap.val();
+    if(!s) return;
+    // 套用到頁面
+    if(s.title){
+      document.title = s.title;
+      const pt = document.getElementById('seoPreviewTitle');
+      const ti = document.getElementById('seoTitle');
+      if(pt) pt.textContent = s.title;
+      if(ti) ti.value = s.title;
+    }
+    if(s.desc){
+      document.querySelector('meta[name=description]')?.setAttribute('content', s.desc);
+      document.querySelector('meta[property="og:description"]')?.setAttribute('content', s.desc);
+      const pd = document.getElementById('seoPreviewDesc');
+      const di = document.getElementById('seoDesc');
+      if(pd) pd.textContent = s.desc.slice(0,100)+(s.desc.length>100?'...':'');
+      if(di) di.value = s.desc;
+    }
+    if(s.keywords){
+      document.querySelector('meta[name=keywords]')?.setAttribute('content', s.keywords);
+      const ki = document.getElementById('seoKeys');
+      if(ki) ki.value = s.keywords;
+    }
+  });
   // Site config
   onValue(ref(db,'config/site'), snap=>{
     siteConfig = snap.val() || {};
@@ -907,8 +933,29 @@ function watchDB() {
   onValue(ref(db,'config/stats'), snap=>{
     const data = snap.val();
     statsData = data ? Object.entries(data).map(([k,v])=>({id:k,...v})) : [...defaultStats];
-    renderStats();
-    renderStatsEditor();
+    renderStats(); // 只更新前台顯示
+    // renderStatsEditor 只在進入後台時才呼叫，避免重複疊加
+  });
+  // About content
+  onValue(ref(db,'config/about'), snap=>{
+    const a = snap.val();
+    if(!a) return;
+    const setEl = (id, val, useHTML=false) => {
+      const el = document.getElementById(id);
+      if(el && val) useHTML ? el.innerHTML = val : el.textContent = val;
+    };
+    const setIn = (id, val) => { const el=document.getElementById(id); if(el&&val) el.value=val; };
+    setEl('aboutTitle',    a.title,    true); // 保留 HTML
+    setEl('aboutSubTitle', a.subTitle);
+    setEl('aboutDesc',     a.desc);
+    setEl('aboutBody1',    a.body1);
+    setEl('aboutBadgeNum', a.badge);
+    // 同步後台欄位
+    setIn('abTitle',    a.title);
+    setIn('abSubTitle', a.subTitle);
+    setIn('abDesc',     a.desc);
+    setIn('abBody1',    a.body1);
+    setIn('abBadge',    a.badge);
   });
   // About features
   onValue(ref(db,'config/features'), snap=>{
@@ -1049,6 +1096,14 @@ function applySiteConfig(){
   setEl('footerTel',    c.tel);
   // 主色
   if(c.primaryColor) document.documentElement.style.setProperty('--leaf',c.primaryColor);
+  // 會員頁面公司名稱同步
+  if(c.name){
+    const authWrap = document.getElementById('authWrap');
+    if(authWrap) renderAuth(); // 重新渲染帶入最新公司名
+    // 後台管理品牌名稱
+    const adminBrand = document.querySelector('.admin-brand');
+    if(adminBrand) adminBrand.textContent = '🌿 ' + c.name + ' 後台管理';
+  }
   // 後台欄位同步
   setIn('siteName',     c.name);
   setIn('siteFullName', c.fullname);
@@ -1124,6 +1179,8 @@ async function loadNews(){
 function renderAuth(){
   const wrap = document.getElementById('authWrap');
   if(!wrap) return;
+  // 動態取得公司名稱
+  const companyName = siteConfig.name || siteConfig.fullname || '新世光綠能科技';
   if(currentUser){
     const initial = (currentUser.displayName||currentUser.email)[0].toUpperCase();
     wrap.innerHTML = `<div class="user-card">
@@ -1137,7 +1194,7 @@ function renderAuth(){
     </div>`;
   } else {
     wrap.innerHTML = `
-      <h3>歡迎加入綠晨</h3>
+      <h3>歡迎加入${companyName}</h3>
       <div class="form-sub">成為會員，享有專屬諮詢服務</div>
       <div class="form-tabs">
         <button class="form-tab active" id="tabLogin" onclick="authTab('login')">登入</button>
@@ -1181,7 +1238,7 @@ window.doRegister = async()=>{
     const c=await createUserWithEmailAndPassword(auth,email,pass);
     await updateProfile(c.user,{displayName:name});
     await set(ref(db,`members/${c.user.uid}`),{name,email,joinedAt:Date.now()});
-    toast('🎉 註冊成功！歡迎加入綠晨');renderAuth();
+    toast('🎉 註冊成功！歡迎加入'+(siteConfig.name||'新世光綠能科技'));renderAuth();
   }catch(e){
     const m={'auth/email-already-in-use':'Email 已被使用','auth/weak-password':'密碼強度不足'};
     document.getElementById('rgMsg').innerHTML=`<div class="auth-status auth-err">${m[e.code]||'註冊失敗'}</div>`;
@@ -1249,6 +1306,11 @@ window.adminNav = (sec, el)=>{
   document.querySelectorAll('.admin-sidebar-item').forEach(i=>i.classList.remove('active'));
   document.getElementById('admin-'+sec)?.classList.add('active');
   el?.classList.add('active');
+  // 進入 stats 時重置渲染旗標
+  if(sec === 'stats'){
+    const ed = document.getElementById('statsEditor');
+    if(ed) ed.dataset.rendered = '';
+  }
   loadAdminSection(sec);
 };
 
@@ -1321,27 +1383,71 @@ window.updateSlide = async(id,field,val)=>{
 
 // STATS EDITOR
 function renderStatsEditor(){
-  const ed=document.getElementById('statsEditor');
-  if(!ed) return;
-  const data=statsData.length?statsData:defaultStats;
-  ed.innerHTML=data.map((s,i)=>`
-    <div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:10px;margin-bottom:10px;align-items:end;">
-      <div class="form-group" style="margin:0;"><label class="form-label">數字 ${i+1}</label><input class="inline-edit" value="${s.num}" id="snum-${i}" /></div>
-      <div class="form-group" style="margin:0;"><label class="form-label">單位</label><input class="inline-edit" value="${s.unit||''}" id="sunit-${i}"/></div>
-      <div class="form-group" style="margin:0;"><label class="form-label">標籤</label><input class="inline-edit" value="${s.label}" id="slabel-${i}"/></div>
-    </div>`).join('');
-}
-window.saveStats = async()=>{
-  const data=statsData.length?statsData:defaultStats;
-  for(let i=0;i<data.length;i++){
-    const id=data[i].id;
-    const num=document.getElementById('snum-'+i)?.value||'';
-    const unit=document.getElementById('sunit-'+i)?.value||'';
-    const label=document.getElementById('slabel-'+i)?.value||'';
-    if(id&&id.startsWith('s')) await update(ref(db,`config/stats/${id}`),{num,unit,label});
-    else await push(ref(db,'config/stats'),{num,unit,label});
+  const ed = document.getElementById('statsEditor');
+  if(!ed || ed.dataset.rendered === 'true') return; // 防止重複渲染
+  ed.dataset.rendered = 'true';
+
+  // 固定顯示 4 筆，用現有資料填入
+  const data = statsData.length ? statsData : defaultStats;
+  const rows = 4;
+  let html = '';
+  for(let i = 0; i < rows; i++){
+    const s = data[i] || {num:'', unit:'', label:''};
+    const fid = s.id || ''; // Firebase key
+    html += `
+    <div style="display:grid;grid-template-columns:1fr 80px 1fr 32px;gap:10px;margin-bottom:12px;align-items:end;">
+      <div class="form-group" style="margin:0;">
+        <label class="form-label">數字 ${i+1}</label>
+        <input class="inline-edit" value="${s.num||''}" id="snum-${i}" placeholder="例：500"/>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label class="form-label">單位</label>
+        <input class="inline-edit" value="${s.unit||''}" id="sunit-${i}" placeholder="+"/>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label class="form-label">標籤</label>
+        <input class="inline-edit" value="${s.label||''}" id="slabel-${i}" placeholder="服務企業"/>
+      </div>
+      <input type="hidden" id="sfid-${i}" value="${fid}"/>
+    </div>`;
   }
-  toast('✅ 數據已更新');
+  ed.innerHTML = html;
+}
+
+window.saveStats = async()=>{
+  try{
+    // 先清除舊的 Firebase stats 資料，再重新寫入
+    await set(ref(db,'config/stats'), null);
+
+    const rows = 4;
+    const newStats = [];
+    for(let i = 0; i < rows; i++){
+      const num   = document.getElementById('snum-'+i)?.value.trim();
+      const unit  = document.getElementById('sunit-'+i)?.value.trim();
+      const label = document.getElementById('slabel-'+i)?.value.trim();
+      if(num && label){ // 有填數字和標籤才儲存
+        newStats.push({num, unit:unit||'', label});
+      }
+    }
+
+    // 重新寫入
+    for(const s of newStats){
+      await push(ref(db,'config/stats'), s);
+    }
+
+    // 更新前台
+    statsData = newStats;
+    renderStats();
+
+    // 重置編輯器讓下次重新渲染
+    const ed = document.getElementById('statsEditor');
+    if(ed) ed.dataset.rendered = '';
+    renderStatsEditor();
+
+    toast('✅ 統計數據已儲存！前台即時更新');
+  }catch(e){
+    toast('儲存失敗：'+e.message, 'err');
+  }
 };
 
 // FEATURES EDITOR
@@ -1366,17 +1472,43 @@ window.deleteFeature = async(id)=>{
 
 // ABOUT SAVE
 window.saveAbout = async()=>{
-  const fields={abTitle:'aboutTitle',abSubTitle:'aboutSubTitle',abDesc:'aboutDesc',abBody1:'aboutBody1',abBadge:'aboutBadgeNum'};
-  const updates={};
-  Object.entries(fields).forEach(([inputId,pageId])=>{
-    const val=document.getElementById(inputId)?.value;
-    if(val){
-      document.getElementById(pageId).textContent=val;
-      updates[inputId.slice(2).toLowerCase()]=val;
-    }
-  });
-  await update(ref(db,'config/about'),updates);
-  toast('✅ 關於我們已更新');
+  const title   = document.getElementById('abTitle')?.value.trim();
+  const subTitle= document.getElementById('abSubTitle')?.value.trim();
+  const desc    = document.getElementById('abDesc')?.value.trim();
+  const body1   = document.getElementById('abBody1')?.value.trim();
+  const badge   = document.getElementById('abBadge')?.value.trim();
+
+  // 即時更新前台 DOM
+  if(title){
+    const el = document.getElementById('aboutTitle');
+    if(el) el.innerHTML = title; // 保留 HTML 格式
+  }
+  if(subTitle){
+    const el = document.getElementById('aboutSubTitle');
+    if(el) el.textContent = subTitle;
+  }
+  if(desc){
+    const el = document.getElementById('aboutDesc');
+    if(el) el.textContent = desc;
+  }
+  if(body1){
+    const el = document.getElementById('aboutBody1');
+    if(el) el.textContent = body1;
+  }
+  if(badge){
+    const el = document.getElementById('aboutBadgeNum');
+    if(el) el.textContent = badge;
+  }
+
+  // 儲存到 Firebase
+  const updates = {};
+  if(title)    updates.title    = title;
+  if(subTitle) updates.subTitle = subTitle;
+  if(desc)     updates.desc     = desc;
+  if(body1)    updates.body1    = body1;
+  if(badge)    updates.badge    = badge;
+  await update(ref(db,'config/about'), updates);
+  toast('✅ 關於我們已更新，前台即時生效！');
 };
 
 // SITE INFO SAVE
@@ -1437,14 +1569,32 @@ window.saveSlideSettings = async()=>{
   await update(ref(db,'config/site'),{slideInterval:document.getElementById('slideInterval').value});
   toast('✅ 輪播設定已儲存');
 };
-window.saveSEO = ()=>{
-  const t=document.getElementById('seoTitle').value;
-  const d=document.getElementById('seoDesc').value;
-  document.title=t;
-  document.querySelector('meta[name=description]')?.setAttribute('content',d);
-  document.getElementById('seoPreviewTitle').textContent=t;
-  document.getElementById('seoPreviewDesc').textContent=d.slice(0,80)+'...';
-  toast('✅ SEO 設定已套用');
+window.saveSEO = async()=>{
+  const t = document.getElementById('seoTitle').value.trim();
+  const d = document.getElementById('seoDesc').value.trim();
+  const k = document.getElementById('seoKeys').value.trim();
+  if(!t){ toast('請填寫頁面 Title','err'); return; }
+
+  // 即時更新瀏覽器
+  document.title = t;
+  document.querySelector('meta[name=description]')?.setAttribute('content', d);
+  document.querySelector('meta[name=keywords]')?.setAttribute('content', k);
+  document.querySelector('meta[property="og:title"]')?.setAttribute('content', t);
+  document.querySelector('meta[property="og:description"]')?.setAttribute('content', d);
+
+  // 更新預覽
+  const pt = document.getElementById('seoPreviewTitle');
+  const pd = document.getElementById('seoPreviewDesc');
+  if(pt) pt.textContent = t;
+  if(pd) pd.textContent = d.slice(0, 100) + (d.length > 100 ? '...' : '');
+
+  // 儲存到 Firebase
+  try{
+    await update(ref(db,'config/seo'), { title:t, desc:d, keywords:k, updatedAt:Date.now() });
+    toast('✅ SEO 設定已儲存到資料庫！');
+  }catch(e){
+    toast('儲存失敗：'+e.message, 'err');
+  }
 };
 
 // ════ 媒體上傳（Firebase Storage）════
