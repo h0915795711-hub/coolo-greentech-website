@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>綠晨科技 | 綠能・永續・未來</title>
-<meta name="description" content="綠晨科技致力於太陽能、風力發電與儲能系統解決方案，為台灣企業與家庭提供清潔能源，共創永續未來。"/>
+<title>新世光綠能科技 | 綠能・永續・未來</title>
+<meta name="description" content="新世光綠能科技致力於太陽能、風力發電與儲能系統解決方案，為台灣企業與家庭提供清潔能源，共創永續未來。"/>
 <meta name="keywords" content="新世光綠能,新世光,coolo,coolo-green,綠能科技,太陽能,太陽能板,太陽能屋頂,太陽能安裝,台中太陽能,LED照明,LED燈管,LED燈,充電樁,電動車充電,儲能系統,儲能設備,ESG,碳中和,永續發展,綠電,再生能源,台灣綠能,台中綠能"/>
 <meta name="robots" content="index,follow"/>
 <meta name="google-site-verification" content="IG7BV-mqEaCUaGXnbguswpvoV9u0TR7hzLIoRs0u6ek"/>
-<meta property="og:title" content="綠晨科技 | 綠能・永續・未來"/>
+<meta property="og:title" content="新世光綠能科技 | 綠能・永續・未來"/>
 <meta property="og:description" content="專業綠能解決方案，太陽能、儲能、碳中和顧問服務"/>
 <meta property="og:type" content="website"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"新世光綠能科技股份有限公司","description":"專業綠能解決方案提供商","url":"https://www.coole-green.com.tw","contactPoint":{"@type":"ContactPoint","telephone":"+886-4-24631805","contactType":"customer service"}}</script>
@@ -627,11 +627,15 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
         <div class="admin-card">
           <h3>📁 上傳圖片或影片</h3>
           <p style="font-size:0.82rem;color:var(--text2);margin-bottom:16px;">支援 JPG、PNG、MP4、WebM；建議圖片 1920×1080，影片壓縮至 30MB 以下。</p>
-          <div class="upload-zone" onclick="document.getElementById('mediaUpload').click()">
+          <div class="upload-zone" id="uploadZone"
+            onclick="document.getElementById('mediaUpload').click()"
+            ondragover="event.preventDefault();this.style.borderColor='var(--leaf)';this.style.background='var(--leaf-light)'"
+            ondragleave="this.style.borderColor='';this.style.background=''"
+            ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';handleMediaUpload({files:event.dataTransfer.files})">
             <input type="file" id="mediaUpload" accept="image/*,video/*" multiple onchange="handleMediaUpload(this)" style="display:none;"/>
             <div class="icon">📁</div>
-            <p>點擊或拖曳上傳圖片 / 影片</p>
-            <div class="hint">支援 JPG、PNG、MP4、WebM・可多檔同時上傳</div>
+            <p style="font-weight:600;">點擊選擇 或 直接拖曳檔案到這裡</p>
+            <div class="hint">支援 JPG、PNG、GIF、MP4、WebM・可多檔同時上傳・圖片限10MB・影片限50MB</div>
           </div>
           <div id="uploadProgress" style="display:none;margin-top:12px;">
             <div style="background:var(--off);border-radius:6px;height:8px;overflow:hidden;">
@@ -733,7 +737,19 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
           </div>
           <div class="form-group"><label class="form-label">簡介說明</label><input class="inline-edit" id="pDesc" placeholder="一句話描述產品優勢"/></div>
           <div class="form-group"><label class="form-label">詳細說明</label><textarea class="inline-edit" id="pFull" rows="3" placeholder="完整產品說明..."></textarea></div>
-          <div class="form-group"><label class="form-label">產品圖片 URL（或上傳後貼入）</label><input class="inline-edit" id="pImg" placeholder="https://..."/></div>
+          <div class="form-group">
+            <label class="form-label">產品圖片</label>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <input class="inline-edit" id="pImg" placeholder="https://... （從媒體圖庫複製URL貼入）" style="flex:1;min-width:200px;"/>
+              <label style="background:var(--leaf);color:#fff;padding:8px 16px;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:700;white-space:nowrap;">
+                📤 上傳圖片
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadProductImg(this)"/>
+              </label>
+            </div>
+            <div id="pImgPreview" style="margin-top:8px;display:none;">
+              <img id="pImgThumb" style="height:80px;border-radius:6px;border:1px solid var(--border);" />
+            </div>
+          </div>
           <div class="save-bar"><button class="btn-save" onclick="addProduct()">➕ 上架產品</button></div>
         </div>
         <div class="admin-card"><h3>已上架產品</h3><div id="adminProductsList"></div></div>
@@ -1609,32 +1625,86 @@ window.saveSEO = async()=>{
 window.handleMediaUpload = async(input)=>{
   const files = Array.from(input.files);
   if(!files.length) return;
+
+  // 檔案大小檢查（圖片 10MB，影片 50MB）
+  for(const file of files){
+    const maxSize = file.type.startsWith('video') ? 50*1024*1024 : 10*1024*1024;
+    if(file.size > maxSize){
+      toast(`❌ ${file.name} 檔案太大（${file.type.startsWith('video')?'影片限50MB':'圖片限10MB'}）`,'err');
+      return;
+    }
+  }
+
   const progress = document.getElementById('uploadProgress');
   const bar = document.getElementById('uploadBar');
   const status = document.getElementById('uploadStatus');
-  if(progress) progress.style.display='block';
+  if(progress){ progress.style.display='block'; }
+  if(bar){ bar.style.width='0%'; }
+
   let done = 0;
   for(const file of files){
     try{
-      if(status) status.textContent = `上傳中：${file.name}`;
-      const storageRef = sRef(storage, `media/${Date.now()}_${file.name}`);
-      const snap = await uploadBytes(storageRef, file);
+      if(status) status.textContent = `📤 上傳中：${file.name}（${Math.round(file.size/1024)}KB）`;
+
+      // 清理檔名（移除中文和特殊字元）
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `media/${Date.now()}_${safeName}`;
+      const storageRef = sRef(storage, path);
+
+      // 上傳檔案
+      const metadata = { contentType: file.type };
+      const snap = await uploadBytes(storageRef, file, metadata);
       const url = await getDownloadURL(snap.ref);
+
+      // 儲存到 Firebase Database
       await push(ref(db,'media'),{
-        url, name:file.name,
+        url,
+        name: file.name,
+        safeName,
+        path,
         type: file.type.startsWith('video') ? 'video' : 'image',
+        size: file.size,
         createdAt: Date.now()
       });
+
       done++;
       if(bar) bar.style.width = Math.round(done/files.length*100)+'%';
       toast('✅ 上傳成功：'+file.name);
+
     }catch(e){
-      toast('上傳失敗：'+file.name+' — '+e.message, 'err');
+      console.error('Upload error:', e);
+      let errMsg = e.message;
+      // 提供友善的錯誤訊息
+      if(e.code === 'storage/unauthorized'){
+        errMsg = 'Storage 權限不足，請確認 Firebase Storage 規則';
+      } else if(e.code === 'storage/canceled'){
+        errMsg = '上傳已取消';
+      } else if(e.code === 'storage/unknown'){
+        errMsg = '網路錯誤，請檢查網路連線後重試';
+      } else if(e.code === 'storage/quota-exceeded'){
+        errMsg = 'Storage 容量已滿';
+      }
+      toast(`❌ 上傳失敗：${file.name} — ${errMsg}`, 'err');
     }
   }
-  if(status) status.textContent = `✅ 全部上傳完成（${done}/${files.length}）`;
-  setTimeout(()=>{ if(progress) progress.style.display='none'; if(bar) bar.style.width='0%'; }, 2000);
-  loadAdminMedia();
+
+  if(status){
+    if(done === files.length){
+      status.textContent = `✅ 全部上傳完成！共 ${done} 個檔案`;
+    } else {
+      status.textContent = `⚠️ 完成 ${done}/${files.length} 個，部分失敗`;
+    }
+  }
+  setTimeout(()=>{
+    if(progress) progress.style.display='none';
+    if(bar) bar.style.width='0%';
+  }, 3000);
+
+  // 重新載入媒體圖庫
+  if(done > 0) loadAdminMedia();
+
+  // 重置 input 讓同一個檔案可以再次上傳
+  input.value = '';
 };
 
 function loadAdminMedia(){
@@ -1672,6 +1742,31 @@ window.deleteMedia = async(id, url)=>{
   try{ await deleteObject(sRef(storage, url)); }catch(e){}
   toast('已刪除媒體');
   loadAdminMedia();
+};
+
+// ════ 產品圖片上傳 ════
+window.uploadProductImg = async(input)=>{
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 10*1024*1024){ toast('圖片不能超過 10MB','err'); return; }
+  toast('📤 產品圖片上傳中...','info');
+  try{
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const storageRef = sRef(storage, `products/${Date.now()}_${safeName}`);
+    const snap = await uploadBytes(storageRef, file, {contentType: file.type});
+    const url = await getDownloadURL(snap.ref);
+    const imgInput = document.getElementById('pImg');
+    if(imgInput) imgInput.value = url;
+    const preview = document.getElementById('pImgPreview');
+    const thumb = document.getElementById('pImgThumb');
+    if(preview && thumb){ thumb.src = url; preview.style.display='block'; }
+    toast('✅ 產品圖片上傳成功！');
+  }catch(e){
+    let msg = e.message;
+    if(e.code==='storage/unauthorized') msg='請確認 Firebase Storage 規則已設定為允許寫入';
+    toast('❌ 上傳失敗：'+msg,'err');
+  }
+  input.value='';
 };
 
 // PRODUCTS ADMIN
