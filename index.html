@@ -360,7 +360,7 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
 <nav id="navbar">
   <a class="nav-logo" onclick="showPage('home')">
     <div class="nav-logo-icon">🌿</div>
-    <div class="nav-logo-text" id="siteNameNav">新世光<span>綠能科技</span></div>
+    <div class="nav-logo-text" id="siteNameNav">新世光綠能<span>科技</span></div>
   </a>
   <ul class="nav-links">
     <li><a onclick="showPage('home')" data-page="home">首頁</a></li>
@@ -430,7 +430,7 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
           </div>
         </div>
         <div>
-          <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:20px;" id="aboutSubTitle">為何選擇綠晨科技？</h3>
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:20px;" id="aboutSubTitle">為何選擇新世光綠能科技？</h3>
           <p style="color:var(--text2);line-height:2;margin-bottom:16px;" id="aboutBody1">我們擁有超過 200 位專業工程師與能源顧問，服務超過 500 家企業及政府機構。從初步評估、系統設計到安裝維護，我們提供全程式服務，確保您的投資獲得最大回報。</p>
           <div class="about-features" id="aboutFeatures"></div>
         </div>
@@ -627,23 +627,51 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
         <div class="admin-card">
           <h3>📁 上傳圖片或影片</h3>
           <p style="font-size:0.82rem;color:var(--text2);margin-bottom:16px;">支援 JPG、PNG、MP4、WebM；建議圖片 1920×1080，影片壓縮至 30MB 以下。</p>
-          <div class="upload-zone" id="uploadZone"
-            onclick="document.getElementById('mediaUpload').click()"
-            ondragover="event.preventDefault();this.style.borderColor='var(--leaf)';this.style.background='var(--leaf-light)'"
-            ondragleave="this.style.borderColor='';this.style.background=''"
-            ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';handleMediaUpload({files:event.dataTransfer.files})">
-            <input type="file" id="mediaUpload" accept="image/*,video/*" multiple onchange="handleMediaUpload(this)" style="display:none;"/>
-            <div class="icon">📁</div>
-            <p style="font-weight:600;">點擊選擇 或 直接拖曳檔案到這裡</p>
-            <div class="hint">支援 JPG、PNG、GIF、MP4、WebM・可多檔同時上傳・圖片限10MB・影片限50MB</div>
-          </div>
-          <div id="uploadProgress" style="display:none;margin-top:12px;">
-            <div style="background:var(--off);border-radius:6px;height:8px;overflow:hidden;">
-              <div id="uploadBar" style="height:100%;background:var(--leaf);border-radius:6px;width:0%;transition:width 0.3s;"></div>
+          <!-- Imgur 使用說明 -->
+          <div style="background:var(--leaf-light);border-radius:10px;padding:20px;margin-bottom:16px;border:1px solid var(--border);">
+            <div style="font-weight:700;margin-bottom:12px;color:var(--leaf);font-size:0.95rem;">📌 免費上傳圖片步驟</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+              <div style="background:#fff;border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
+                <div style="font-size:1.8rem;margin-bottom:6px;">1️⃣</div>
+                <div style="font-size:0.82rem;font-weight:700;margin-bottom:4px;">前往 Imgur 上傳</div>
+                <a href="https://imgur.com/upload" target="_blank" style="display:inline-block;background:var(--leaf);color:#fff;padding:6px 14px;border-radius:6px;font-size:0.78rem;font-weight:700;text-decoration:none;margin-top:4px;">開啟 Imgur →</a>
+              </div>
+              <div style="background:#fff;border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
+                <div style="font-size:1.8rem;margin-bottom:6px;">2️⃣</div>
+                <div style="font-size:0.82rem;font-weight:700;margin-bottom:4px;">右鍵圖片</div>
+                <div style="font-size:0.78rem;color:var(--text2);">點「複製圖片位址」</div>
+              </div>
+              <div style="background:#fff;border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
+                <div style="font-size:1.8rem;margin-bottom:6px;">3️⃣</div>
+                <div style="font-size:0.82rem;font-weight:700;margin-bottom:4px;">貼入下方網址欄</div>
+                <div style="font-size:0.78rem;color:var(--text2);">點「加入圖庫」完成</div>
+              </div>
             </div>
-            <div id="uploadStatus" style="font-size:0.8rem;color:var(--text2);margin-top:6px;text-align:center;">上傳中...</div>
           </div>
-          <div class="media-grid" id="adminMediaGrid" style="margin-top:16px;"></div>
+
+          <!-- URL 輸入區 -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
+            <div style="flex:1;min-width:200px;">
+              <label class="form-label">圖片或影片網址（Imgur / YouTube）</label>
+              <input class="inline-edit" id="newMediaUrl" placeholder="https://i.imgur.com/xxxxxx.jpg"/>
+            </div>
+            <div style="width:120px;">
+              <label class="form-label">名稱（選填）</label>
+              <input class="inline-edit" id="newMediaName" placeholder="首頁輪播1"/>
+            </div>
+            <div style="width:100px;">
+              <label class="form-label">類型</label>
+              <select class="inline-edit" id="newMediaType">
+                <option value="image">🖼️ 圖片</option>
+                <option value="video">🎬 影片</option>
+              </select>
+            </div>
+            <button class="btn-save" onclick="addMediaUrl()" style="height:38px;margin-top:18px;white-space:nowrap;">＋ 加入圖庫</button>
+          </div>
+
+          <div class="media-grid" id="adminMediaGrid">
+            <p style="color:var(--text3);font-size:0.85rem;">尚無媒體，請貼入 Imgur 網址加入圖庫</p>
+          </div>
         </div>
 
         <!-- 輪播設定 -->
@@ -670,7 +698,7 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
         <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:20px;">🏢 公司基本資訊</h2>
         <div class="admin-card">
           <h3>公司名稱與識別</h3>
-          <div class="form-group"><label class="form-label">公司名稱（導覽列）</label><input class="inline-edit" id="siteName" value="綠晨科技"/></div>
+          <div class="form-group"><label class="form-label">公司名稱（導覽列）</label><input class="inline-edit" id="siteName" value="新世光綠能科技"/></div>
           <div class="form-group"><label class="form-label">公司全名</label><input class="inline-edit" id="siteFullName" value="新世光綠能科技股份有限公司"/></div>
           <div class="form-group"><label class="form-label">品牌 Slogan</label><input class="inline-edit" id="siteSlogan" value="綠能・永續・未來"/></div>
           <div class="form-group"><label class="form-label">網站主色系</label>
@@ -711,8 +739,8 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
         <div class="admin-card">
           <h3>頁面文字內容</h3>
           <div class="form-group"><label class="form-label">標題</label><input class="inline-edit" id="abTitle" value="以綠能點亮每一個明天"/></div>
-          <div class="form-group"><label class="form-label">副標題</label><input class="inline-edit" id="abSubTitle" value="為何選擇綠晨科技？"/></div>
-          <div class="form-group"><label class="form-label">說明文字</label><textarea class="inline-edit" id="abDesc" rows="3">綠晨科技成立以來，專注於再生能源技術的研發與應用...</textarea></div>
+          <div class="form-group"><label class="form-label">副標題</label><input class="inline-edit" id="abSubTitle" value="為何選擇新世光綠能科技？"/></div>
+          <div class="form-group"><label class="form-label">說明文字</label><textarea class="inline-edit" id="abDesc" rows="3">新世光綠能科技成立以來，專注於再生能源技術的研發與應用...</textarea></div>
           <div class="form-group"><label class="form-label">正文段落 1</label><textarea class="inline-edit" id="abBody1" rows="3">我們擁有超過 200 位專業工程師與能源顧問...</textarea></div>
           <div class="form-group"><label class="form-label">年資標示（如：10+）</label><input class="inline-edit" id="abBadge" value="10+" style="width:120px;"/></div>
           <div class="save-bar"><button class="btn-save" onclick="saveAbout()">💾 儲存關於我們</button></div>
@@ -738,13 +766,10 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
           <div class="form-group"><label class="form-label">簡介說明</label><input class="inline-edit" id="pDesc" placeholder="一句話描述產品優勢"/></div>
           <div class="form-group"><label class="form-label">詳細說明</label><textarea class="inline-edit" id="pFull" rows="3" placeholder="完整產品說明..."></textarea></div>
           <div class="form-group">
-            <label class="form-label">產品圖片</label>
+            <label class="form-label">產品圖片網址（從媒體圖庫複製URL貼入）</label>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-              <input class="inline-edit" id="pImg" placeholder="https://... （從媒體圖庫複製URL貼入）" style="flex:1;min-width:200px;"/>
-              <label style="background:var(--leaf);color:#fff;padding:8px 16px;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:700;white-space:nowrap;">
-                📤 上傳圖片
-                <input type="file" accept="image/*" style="display:none;" onchange="uploadProductImg(this)"/>
-              </label>
+              <input class="inline-edit" id="pImg" placeholder="https://i.imgur.com/xxxxxx.jpg" style="flex:1;" oninput="previewPImg(this.value)"/>
+              <button class="btn-save" style="white-space:nowrap;height:38px;" onclick="adminNav('hero',document.querySelector('.admin-sidebar-item:nth-child(5)'))">📁 開啟媒體圖庫</button>
             </div>
             <div id="pImgPreview" style="margin-top:8px;display:none;">
               <img id="pImgThumb" style="height:80px;border-radius:6px;border:1px solid var(--border);" />
@@ -842,7 +867,7 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
 import { getDatabase, ref, push, onValue, set, remove, get, update } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js';
+// Storage 不使用，改用 Imgur 免費圖床
 
 // ════ FIREBASE CONFIG ════
 // 🔧 請替換為您的 Firebase 設定
@@ -861,7 +886,7 @@ const ADMIN_PASS = "green2024!"; // 🔧 請修改後台密碼
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-const storage = getStorage(app);
+// const storage = getStorage(app); // 不使用
 
 // ════ STATE ════
 let currentUser = null;
@@ -1622,89 +1647,23 @@ window.saveSEO = async()=>{
 };
 
 // ════ 媒體上傳（Firebase Storage）════
-window.handleMediaUpload = async(input)=>{
-  const files = Array.from(input.files);
-  if(!files.length) return;
-
-  // 檔案大小檢查（圖片 10MB，影片 50MB）
-  for(const file of files){
-    const maxSize = file.type.startsWith('video') ? 50*1024*1024 : 10*1024*1024;
-    if(file.size > maxSize){
-      toast(`❌ ${file.name} 檔案太大（${file.type.startsWith('video')?'影片限50MB':'圖片限10MB'}）`,'err');
-      return;
-    }
+// ════ Imgur 媒體圖庫（免費・無需 Storage）════
+window.addMediaUrl = async()=>{
+  const url = document.getElementById('newMediaUrl')?.value.trim();
+  if(!url){ toast('請貼入圖片或影片的網址','err'); return; }
+  // 基本網址格式驗證
+  if(!url.startsWith('http')){ toast('請輸入完整網址（以 http 開頭）','err'); return; }
+  const name = document.getElementById('newMediaName')?.value.trim() || '媒體_'+Date.now();
+  const type = document.getElementById('newMediaType')?.value || 'image';
+  try{
+    await push(ref(db,'media'),{url, name, type, createdAt:Date.now()});
+    document.getElementById('newMediaUrl').value = '';
+    document.getElementById('newMediaName').value = '';
+    toast('✅ 已加入媒體圖庫！點「複製URL」套用到輪播');
+    loadAdminMedia();
+  }catch(e){
+    toast('儲存失敗：'+e.message,'err');
   }
-
-  const progress = document.getElementById('uploadProgress');
-  const bar = document.getElementById('uploadBar');
-  const status = document.getElementById('uploadStatus');
-  if(progress){ progress.style.display='block'; }
-  if(bar){ bar.style.width='0%'; }
-
-  let done = 0;
-  for(const file of files){
-    try{
-      if(status) status.textContent = `📤 上傳中：${file.name}（${Math.round(file.size/1024)}KB）`;
-
-      // 清理檔名（移除中文和特殊字元）
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const path = `media/${Date.now()}_${safeName}`;
-      const storageRef = sRef(storage, path);
-
-      // 上傳檔案
-      const metadata = { contentType: file.type };
-      const snap = await uploadBytes(storageRef, file, metadata);
-      const url = await getDownloadURL(snap.ref);
-
-      // 儲存到 Firebase Database
-      await push(ref(db,'media'),{
-        url,
-        name: file.name,
-        safeName,
-        path,
-        type: file.type.startsWith('video') ? 'video' : 'image',
-        size: file.size,
-        createdAt: Date.now()
-      });
-
-      done++;
-      if(bar) bar.style.width = Math.round(done/files.length*100)+'%';
-      toast('✅ 上傳成功：'+file.name);
-
-    }catch(e){
-      console.error('Upload error:', e);
-      let errMsg = e.message;
-      // 提供友善的錯誤訊息
-      if(e.code === 'storage/unauthorized'){
-        errMsg = 'Storage 權限不足，請確認 Firebase Storage 規則';
-      } else if(e.code === 'storage/canceled'){
-        errMsg = '上傳已取消';
-      } else if(e.code === 'storage/unknown'){
-        errMsg = '網路錯誤，請檢查網路連線後重試';
-      } else if(e.code === 'storage/quota-exceeded'){
-        errMsg = 'Storage 容量已滿';
-      }
-      toast(`❌ 上傳失敗：${file.name} — ${errMsg}`, 'err');
-    }
-  }
-
-  if(status){
-    if(done === files.length){
-      status.textContent = `✅ 全部上傳完成！共 ${done} 個檔案`;
-    } else {
-      status.textContent = `⚠️ 完成 ${done}/${files.length} 個，部分失敗`;
-    }
-  }
-  setTimeout(()=>{
-    if(progress) progress.style.display='none';
-    if(bar) bar.style.width='0%';
-  }, 3000);
-
-  // 重新載入媒體圖庫
-  if(done > 0) loadAdminMedia();
-
-  // 重置 input 讓同一個檔案可以再次上傳
-  input.value = '';
 };
 
 function loadAdminMedia(){
@@ -1713,19 +1672,20 @@ function loadAdminMedia(){
   get(ref(db,'media')).then(snap=>{
     const data = snap.val();
     if(!data){
-      grid.innerHTML='<p style="color:var(--text3);font-size:0.85rem;">尚無媒體，請上傳圖片或影片</p>';
+      grid.innerHTML='<p style="color:var(--text3);font-size:0.85rem;margin-top:8px;">尚無媒體，請貼入 Imgur 網址加入圖庫</p>';
       return;
     }
     const items = Object.entries(data).map(([k,v])=>({id:k,...v}))
                         .sort((a,b)=>b.createdAt-a.createdAt);
     grid.innerHTML = items.map(m=>`
-      <div class="media-item">
+      <div class="media-item" style="position:relative;">
         ${m.type==='video'
           ? `<video src="${m.url}" muted style="width:100%;height:100%;object-fit:cover;"></video>`
-          : `<img src="${m.url}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;"/>`}
+          : `<img src="${m.url}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\'text-align:center;padding:10px;font-size:0.7rem;color:#888;\'>圖片無法載入</div>'"/>`}
         <span class="type-badge">${m.type==='video'?'🎬 影片':'🖼️ 圖片'}</span>
-        <button class="use-btn" onclick="copyURL('${m.url}')">複製 URL</button>
-        <button class="del-btn" onclick="deleteMedia('${m.id}','${m.url}')">✕</button>
+        <button class="use-btn" onclick="copyURL('${m.url}')" title="複製網址貼到幻燈片URL欄位">複製URL</button>
+        <button class="del-btn" onclick="deleteMedia('${m.id}','')" title="從圖庫移除">✕</button>
+        <div style="position:absolute;bottom:26px;left:0;right:0;background:rgba(0,0,0,0.5);color:#fff;font-size:0.62rem;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.name}</div>
       </div>`).join('');
   });
 }
@@ -1737,36 +1697,23 @@ window.copyURL = async(url)=>{
 };
 
 window.deleteMedia = async(id, url)=>{
-  if(!confirm('確定刪除此媒體？（Firebase Storage 上的檔案也會一併刪除）')) return;
+  if(!confirm('確定從圖庫移除此媒體？\n（Imgur 上的原始圖片不受影響）')) return;
   await remove(ref(db,`media/${id}`));
-  try{ await deleteObject(sRef(storage, url)); }catch(e){}
-  toast('已刪除媒體');
+  toast('已從圖庫移除');
   loadAdminMedia();
 };
 
-// ════ 產品圖片上傳 ════
-window.uploadProductImg = async(input)=>{
-  const file = input.files[0];
-  if(!file) return;
-  if(file.size > 10*1024*1024){ toast('圖片不能超過 10MB','err'); return; }
-  toast('📤 產品圖片上傳中...','info');
-  try{
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-    const storageRef = sRef(storage, `products/${Date.now()}_${safeName}`);
-    const snap = await uploadBytes(storageRef, file, {contentType: file.type});
-    const url = await getDownloadURL(snap.ref);
-    const imgInput = document.getElementById('pImg');
-    if(imgInput) imgInput.value = url;
-    const preview = document.getElementById('pImgPreview');
-    const thumb = document.getElementById('pImgThumb');
-    if(preview && thumb){ thumb.src = url; preview.style.display='block'; }
-    toast('✅ 產品圖片上傳成功！');
-  }catch(e){
-    let msg = e.message;
-    if(e.code==='storage/unauthorized') msg='請確認 Firebase Storage 規則已設定為允許寫入';
-    toast('❌ 上傳失敗：'+msg,'err');
+// ════ 產品圖片預覽（Imgur URL）════
+window.previewPImg = (url)=>{
+  const preview = document.getElementById('pImgPreview');
+  const thumb = document.getElementById('pImgThumb');
+  if(!preview || !thumb) return;
+  if(url && url.startsWith('http')){
+    thumb.src = url;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
   }
-  input.value='';
 };
 
 // PRODUCTS ADMIN
