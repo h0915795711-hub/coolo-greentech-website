@@ -12,6 +12,9 @@
 <meta property="og:description" content="專業綠能解決方案，太陽能、儲能、碳中和顧問服務"/>
 <meta property="og:type" content="website"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"新世光綠能科技股份有限公司","description":"專業綠能解決方案提供商","url":"https://www.coole-green.com.tw","contactPoint":{"@type":"ContactPoint","telephone":"+886-4-24631805","contactType":"customer service"}}</script>
+<!-- Google API for Drive Picker -->
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Sans:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet"/>
 
@@ -627,50 +630,44 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
         <div class="admin-card">
           <h3>📁 上傳圖片或影片</h3>
           <p style="font-size:0.82rem;color:var(--text2);margin-bottom:16px;">支援 JPG、PNG、MP4、WebM；建議圖片 1920×1080，影片壓縮至 30MB 以下。</p>
-          <!-- Imgur 使用說明 -->
-          <div style="background:var(--leaf-light);border-radius:10px;padding:20px;margin-bottom:16px;border:1px solid var(--border);">
-            <div style="font-weight:700;margin-bottom:12px;color:var(--leaf);font-size:0.95rem;">📌 免費上傳圖片步驟</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-              <div style="background:#fff;border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
-                <div style="font-size:1.8rem;margin-bottom:6px;">1️⃣</div>
-                <div style="font-size:0.82rem;font-weight:700;margin-bottom:4px;">前往 Imgur 上傳</div>
-                <a href="https://imgur.com/upload" target="_blank" style="display:inline-block;background:var(--leaf);color:#fff;padding:6px 14px;border-radius:6px;font-size:0.78rem;font-weight:700;text-decoration:none;margin-top:4px;">開啟 Imgur →</a>
-              </div>
-              <div style="background:#fff;border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
-                <div style="font-size:1.8rem;margin-bottom:6px;">2️⃣</div>
-                <div style="font-size:0.82rem;font-weight:700;margin-bottom:4px;">右鍵圖片</div>
-                <div style="font-size:0.78rem;color:var(--text2);">點「複製圖片位址」</div>
-              </div>
-              <div style="background:#fff;border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
-                <div style="font-size:1.8rem;margin-bottom:6px;">3️⃣</div>
-                <div style="font-size:0.82rem;font-weight:700;margin-bottom:4px;">貼入下方網址欄</div>
-                <div style="font-size:0.78rem;color:var(--text2);">點「加入圖庫」完成</div>
-              </div>
-            </div>
+          <!-- Google Drive 上傳區 -->
+          <div style="background:var(--leaf-light);border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid var(--border);">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--leaf);font-size:0.95rem;">☁️ 從 Google Drive 選取圖片（推薦）</div>
+            <div style="font-size:0.82rem;color:var(--text2);margin-bottom:14px;">直接從你的 Google Drive 選取圖片，自動轉換為可顯示的網址</div>
+            <button class="btn-save" onclick="openDrivePicker()" style="display:flex;align-items:center;gap:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M6.28 3L1 12.5 6.28 22h11.44L23 12.5 17.72 3H6.28zm3.6 13.5L5.76 9l4.12-7h4.24l4.12 7-4.12 7H9.88z"/></svg>
+              開啟 Google Drive 選取圖片
+            </button>
           </div>
 
-          <!-- URL 輸入區 -->
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
-            <div style="flex:1;min-width:200px;">
-              <label class="form-label">圖片或影片網址（Imgur / YouTube）</label>
-              <input class="inline-edit" id="newMediaUrl" placeholder="https://i.imgur.com/xxxxxx.jpg"/>
+          <!-- 手動輸入 URL -->
+          <div style="background:var(--off);border-radius:10px;padding:16px;margin-bottom:16px;border:1px solid var(--border);">
+            <div style="font-weight:700;margin-bottom:12px;font-size:0.88rem;">📎 或手動輸入圖片網址</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+              <div style="flex:1;min-width:200px;">
+                <label class="form-label">Google Drive / 任何公開圖片網址</label>
+                <input class="inline-edit" id="newMediaUrl" placeholder="貼入 Google Drive 圖片網址..."/>
+              </div>
+              <div style="width:130px;">
+                <label class="form-label">名稱（選填）</label>
+                <input class="inline-edit" id="newMediaName" placeholder="首頁輪播1"/>
+              </div>
+              <div style="width:100px;">
+                <label class="form-label">類型</label>
+                <select class="inline-edit" id="newMediaType">
+                  <option value="image">🖼️ 圖片</option>
+                  <option value="video">🎬 影片</option>
+                </select>
+              </div>
+              <button class="btn-save" onclick="addMediaUrl()" style="height:38px;margin-top:18px;white-space:nowrap;">＋ 加入圖庫</button>
             </div>
-            <div style="width:120px;">
-              <label class="form-label">名稱（選填）</label>
-              <input class="inline-edit" id="newMediaName" placeholder="首頁輪播1"/>
+            <div style="margin-top:10px;padding:10px;background:rgba(45,122,58,0.08);border-radius:6px;font-size:0.78rem;color:var(--text2);">
+              💡 <strong>Google Drive 手動步驟：</strong>上傳圖片 → 右鍵「共用」→ 設為「知道連結的人」→ 複製連結中的 ID → 組合成：<code>https://drive.google.com/uc?export=view&id=你的ID</code>
             </div>
-            <div style="width:100px;">
-              <label class="form-label">類型</label>
-              <select class="inline-edit" id="newMediaType">
-                <option value="image">🖼️ 圖片</option>
-                <option value="video">🎬 影片</option>
-              </select>
-            </div>
-            <button class="btn-save" onclick="addMediaUrl()" style="height:38px;margin-top:18px;white-space:nowrap;">＋ 加入圖庫</button>
           </div>
 
           <div class="media-grid" id="adminMediaGrid">
-            <p style="color:var(--text3);font-size:0.85rem;">尚無媒體，請貼入 Imgur 網址加入圖庫</p>
+            <p style="color:var(--text3);font-size:0.85rem;">尚無媒體，請從 Google Drive 選取或輸入網址</p>
           </div>
         </div>
 
@@ -769,7 +766,7 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
             <label class="form-label">產品圖片網址（從媒體圖庫複製URL貼入）</label>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
               <input class="inline-edit" id="pImg" placeholder="https://i.imgur.com/xxxxxx.jpg" style="flex:1;" oninput="previewPImg(this.value)"/>
-              <button class="btn-save" style="white-space:nowrap;height:38px;" onclick="adminNav('hero',document.querySelector('.admin-sidebar-item:nth-child(5)'))">📁 開啟媒體圖庫</button>
+              <button class="btn-save" style="white-space:nowrap;height:38px;" onclick="openDrivePicker()">☁️ 從 Google Drive 選取</button>
             </div>
             <div id="pImgPreview" style="margin-top:8px;display:none;">
               <img id="pImgThumb" style="height:80px;border-radius:6px;border:1px solid var(--border);" />
@@ -1647,6 +1644,158 @@ window.saveSEO = async()=>{
 };
 
 // ════ 媒體上傳（Firebase Storage）════
+// ════ Google Drive Picker ════
+// 🔧 請到 Google Cloud Console 建立 API Key 和 OAuth Client ID
+// https://console.cloud.google.com
+const GOOGLE_API_KEY = 'YOUR_GOOGLE_API_KEY';       // ← 填入
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';   // ← 填入
+const GOOGLE_APP_ID = 'YOUR_GOOGLE_APP_ID';         // ← 填入（數字）
+
+let pickerApiLoaded = false;
+let oauthToken = null;
+
+// 載入 Google Picker API
+function loadPickerApi(){
+  return new Promise(resolve=>{
+    if(pickerApiLoaded){ resolve(); return; }
+    gapi.load('picker', ()=>{ pickerApiLoaded = true; resolve(); });
+  });
+}
+
+// 取得 Google OAuth Token
+async function getGoogleToken(){
+  return new Promise((resolve, reject)=>{
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.readonly',
+      callback: (resp)=>{
+        if(resp.error){ reject(resp.error); return; }
+        oauthToken = resp.access_token;
+        resolve(resp.access_token);
+      }
+    });
+    client.requestAccessToken();
+  });
+}
+
+// 開啟 Google Drive Picker
+window.openDrivePicker = async()=>{
+  try{
+    toast('⏳ 開啟 Google Drive...','info');
+
+    // 檢查是否已設定 API Key
+    if(GOOGLE_API_KEY === 'YOUR_GOOGLE_API_KEY'){
+      // 未設定 API Key，改用手動輸入引導
+      showDriveGuide();
+      return;
+    }
+
+    await loadPickerApi();
+    const token = await getGoogleToken();
+
+    const picker = new google.picker.PickerBuilder()
+      .addView(new google.picker.DocsView(google.picker.ViewId.DOCS_IMAGES)
+        .setIncludeFolders(true))
+      .addView(new google.picker.DocsView()
+        .setIncludeFolders(true)
+        .setSelectFolderEnabled(false))
+      .setOAuthToken(token)
+      .setDeveloperKey(GOOGLE_API_KEY)
+      .setAppId(GOOGLE_APP_ID)
+      .setCallback(async(data)=>{
+        if(data.action === google.picker.Action.PICKED){
+          const file = data.docs[0];
+          const fileId = file.id;
+          const fileName = file.name;
+          // 轉換為直接顯示 URL
+          const url = `https://drive.google.com/uc?export=view&id=${fileId}`;
+          // 自動加入圖庫
+          await push(ref(db,'media'),{
+            url, name: fileName, type:'image',
+            driveId: fileId, createdAt:Date.now()
+          });
+          toast('✅ 已從 Google Drive 加入圖庫：'+fileName);
+          loadAdminMedia();
+        }
+      })
+      .build();
+    picker.setVisible(true);
+
+  }catch(e){
+    console.error('Drive Picker error:', e);
+    // 如果 Picker 失敗，顯示手動引導
+    showDriveGuide();
+  }
+};
+
+// 顯示 Google Drive 手動操作引導彈窗
+function showDriveGuide(){
+  const modal = document.getElementById('modal');
+  const body = document.getElementById('modalBody');
+  if(!body) return;
+  body.innerHTML = `
+    <h3 style="font-family:'Playfair Display',serif;margin-bottom:8px;">☁️ Google Drive 圖片設定</h3>
+    <div style="font-size:0.85rem;color:var(--text2);margin-bottom:20px;">按以下步驟取得圖片網址</div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="background:var(--off);border-radius:8px;padding:14px;border:1px solid var(--border);">
+        <div style="font-weight:700;margin-bottom:6px;">① 前往 Google Drive 上傳圖片</div>
+        <a href="https://drive.google.com" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--leaf);color:#fff;padding:8px 16px;border-radius:7px;font-size:0.85rem;font-weight:700;text-decoration:none;">
+          開啟 Google Drive →
+        </a>
+      </div>
+      <div style="background:var(--off);border-radius:8px;padding:14px;border:1px solid var(--border);">
+        <div style="font-weight:700;margin-bottom:6px;">② 右鍵圖片 → 共用 → 設為「知道連結的人」</div>
+        <div style="font-size:0.82rem;color:var(--text2);">複製連結，格式如：<br/><code style="background:#e8f5ea;padding:2px 6px;border-radius:4px;font-size:0.78rem;">https://drive.google.com/file/d/<strong>1ABC123XYZ</strong>/view</code></div>
+      </div>
+      <div style="background:var(--off);border-radius:8px;padding:14px;border:1px solid var(--border);">
+        <div style="font-weight:700;margin-bottom:8px;">③ 貼入連結，自動轉換網址</div>
+        <input class="form-input" id="driveLink" placeholder="貼入 Google Drive 分享連結..." style="margin-bottom:8px;"/>
+        <button class="btn-submit" onclick="convertDriveUrl()">🔄 轉換並加入圖庫</button>
+        <div id="driveConvertResult" style="margin-top:8px;font-size:0.82rem;"></div>
+      </div>
+    </div>`;
+  modal.classList.add('show');
+}
+
+// 自動轉換 Google Drive 分享連結
+window.convertDriveUrl = async()=>{
+  const link = document.getElementById('driveLink')?.value.trim();
+  const result = document.getElementById('driveConvertResult');
+  if(!link){ result.innerHTML='<span style="color:red;">請貼入連結</span>'; return; }
+
+  // 提取 File ID
+  let fileId = '';
+  const patterns = [
+    /\/file\/d\/([a-zA-Z0-9_-]+)/,
+    /id=([a-zA-Z0-9_-]+)/,
+    /\/d\/([a-zA-Z0-9_-]+)/,
+  ];
+  for(const p of patterns){
+    const m = link.match(p);
+    if(m){ fileId = m[1]; break; }
+  }
+
+  if(!fileId){
+    result.innerHTML='<span style="color:red;">無法識別 Google Drive 連結，請確認格式正確</span>';
+    return;
+  }
+
+  const url = `https://drive.google.com/uc?export=view&id=${fileId}`;
+  result.innerHTML=`<div style="color:var(--leaf);margin-bottom:8px;">✅ 轉換成功！</div>
+    <code style="font-size:0.75rem;word-break:break-all;background:var(--off);padding:6px;border-radius:4px;display:block;">${url}</code>`;
+
+  // 自動加入圖庫
+  const name = '圖片_'+fileId.slice(0,8);
+  await push(ref(db,'media'),{url, name, type:'image', driveId:fileId, createdAt:Date.now()});
+
+  setTimeout(()=>{
+    document.getElementById('modal').classList.remove('show');
+    loadAdminMedia();
+    toast('✅ 已加入媒體圖庫！');
+  }, 1500);
+};
+
 // ════ Imgur 媒體圖庫（免費・無需 Storage）════
 window.addMediaUrl = async()=>{
   const url = document.getElementById('newMediaUrl')?.value.trim();
