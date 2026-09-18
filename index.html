@@ -662,7 +662,7 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
               <button class="btn-save" onclick="addMediaUrl()" style="height:38px;margin-top:18px;white-space:nowrap;">＋ 加入圖庫</button>
             </div>
             <div style="margin-top:10px;padding:10px;background:rgba(45,122,58,0.08);border-radius:6px;font-size:0.78rem;color:var(--text2);">
-              💡 <strong>Google Drive 手動步驟：</strong>上傳圖片 → 右鍵「共用」→ 設為「知道連結的人」→ 複製連結中的 ID → 組合成：<code>https://drive.google.com/uc?export=view&id=你的ID</code>
+              💡 <strong>Google Drive 手動步驟：</strong>上傳圖片 → 右鍵「共用」→ 設為「知道連結的人」→ 複製連結中的 ID → 組合成：<code>https://lh3.googleusercontent.com/d/你的FileID</code>
             </div>
           </div>
 
@@ -685,6 +685,10 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:60px 8% 30px;}
         </div>
         <div class="admin-card">
           <h3>幻燈片內容編輯</h3>
+          <div style="background:rgba(244,185,66,0.1);border:1px solid rgba(244,185,66,0.3);border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.85rem;">
+            ⚠️ <strong>重要：</strong>如果輪播圖片沒有顯示，點下方按鈕自動修復所有舊格式網址
+            <button class="btn-save" onclick="fixAllDriveUrls()" style="margin-left:12px;background:var(--sun,#f4b942);color:#333;">🔧 一鍵修復所有圖片網址</button>
+          </div>
           <div id="slidesEditor"></div>
           <button class="btn-save" style="margin-top:12px;" onclick="addSlide()">＋ 新增幻燈片</button>
         </div>
@@ -1423,7 +1427,88 @@ window.deleteSlide = async(id)=>{
   await remove(ref(db,`config/slides/${id}`));
   toast('已刪除');
 };
+// 修復所有舊格式 Google Drive URL
+window.fixAllDriveUrls = async()=>{
+  toast('🔧 正在修復所有圖片網址...','info');
+  let fixed = 0;
+
+  // 修復 slides
+  const slidesSnap = await get(ref(db,'config/slides'));
+  const slides = slidesSnap.val();
+  if(slides){
+    for(const [id, slide] of Object.entries(slides)){
+      if(slide.url && slide.url.includes('drive.google.com/uc?export=view')){
+        const m = slide.url.match(/id=([a-zA-Z0-9_-]+)/);
+        if(m){
+          const newUrl = `https://lh3.googleusercontent.com/d/${m[1]}`;
+          await update(ref(db,`config/slides/${id}`),{url: newUrl});
+          fixed++;
+        }
+      }
+    }
+  }
+
+  // 修復 media 圖庫
+  const mediaSnap = await get(ref(db,'media'));
+  const media = mediaSnap.val();
+  if(media){
+    for(const [id, item] of Object.entries(media)){
+      if(item.url && item.url.includes('drive.google.com/uc?export=view')){
+        const m = item.url.match(/id=([a-zA-Z0-9_-]+)/);
+        if(m){
+          const newUrl = `https://lh3.googleusercontent.com/d/${m[1]}`;
+          await update(ref(db,`media/${id}`),{url: newUrl});
+          fixed++;
+        }
+      }
+    }
+  }
+
+  // 修復 products
+  const prodSnap = await get(ref(db,'products'));
+  const prods = prodSnap.val();
+  if(prods){
+    for(const [id, prod] of Object.entries(prods)){
+      if(prod.url && prod.url.includes('drive.google.com/uc?export=view')){
+        const m = prod.url.match(/id=([a-zA-Z0-9_-]+)/);
+        if(m){
+          const newUrl = `https://lh3.googleusercontent.com/d/${m[1]}`;
+          await update(ref(db,`products/${id}`),{url: newUrl});
+          fixed++;
+        }
+      }
+    }
+  }
+
+  if(fixed > 0){
+    toast(`✅ 已修復 ${fixed} 個圖片網址！請重新整理頁面查看效果`);
+    renderSlidesEditor();
+    loadAdminMedia();
+  } else {
+    toast('✅ 所有網址格式都正確，無需修復');
+  }
+};
+
 window.updateSlide = async(id,field,val)=>{
+  // 如果是 URL 欄位，自動轉換 Google Drive 連結
+  if(field === 'url' && val && val.includes('drive.google.com')){
+    const patterns = [
+      /\/file\/d\/([a-zA-Z0-9_-]+)/,
+      /id=([a-zA-Z0-9_-]+)/,
+      /\/d\/([a-zA-Z0-9_-]+)/,
+    ];
+    for(const p of patterns){
+      const m = val.match(p);
+      if(m){
+        val = `https://lh3.googleusercontent.com/d/${m[1]}`;
+        toast('🔄 已自動轉換為可顯示格式','info');
+        // 同步更新輸入框顯示
+        const inputs = document.querySelectorAll(`[onchange*="${id}"][onchange*="url"]`);
+        inputs.forEach(inp => inp.value = val);
+        break;
+      }
+    }
+  }
   await update(ref(db,`config/slides/${id}`),{[field]:val});
 };
 
@@ -1708,7 +1793,7 @@ window.openDrivePicker = async()=>{
           const fileId = file.id;
           const fileName = file.name;
           // 轉換為直接顯示 URL
-          const url = `https://drive.google.com/uc?export=view&id=${fileId}`;
+          const url = `https://lh3.googleusercontent.com/d/${fileId}`;
           // 自動加入圖庫
           await push(ref(db,'media'),{
             url, name: fileName, type:'image',
@@ -1781,7 +1866,8 @@ window.convertDriveUrl = async()=>{
     return;
   }
 
-  const url = `https://drive.google.com/uc?export=view&id=${fileId}`;
+  // 使用新版 Google Drive 直接顯示格式（2024年後舊格式已被封鎖）
+  const url = `https://lh3.googleusercontent.com/d/${fileId}`;
   result.innerHTML=`<div style="color:var(--leaf);margin-bottom:8px;">✅ 轉換成功！</div>
     <code style="font-size:0.75rem;word-break:break-all;background:var(--off);padding:6px;border-radius:4px;display:block;">${url}</code>`;
 
@@ -1798,10 +1884,32 @@ window.convertDriveUrl = async()=>{
 
 // ════ Imgur 媒體圖庫（免費・無需 Storage）════
 window.addMediaUrl = async()=>{
-  const url = document.getElementById('newMediaUrl')?.value.trim();
-  if(!url){ toast('請貼入圖片或影片的網址','err'); return; }
-  // 基本網址格式驗證
+  let url = document.getElementById('newMediaUrl')?.value.trim();
+  if(!url){ toast('請貼入圖片網址或 Google Drive 連結','err'); return; }
+
+  // 自動轉換 Google Drive 分享連結
+  if(url.includes('drive.google.com')){
+    const patterns = [
+      /\/file\/d\/([a-zA-Z0-9_-]+)/,
+      /id=([a-zA-Z0-9_-]+)/,
+      /\/d\/([a-zA-Z0-9_-]+)/,
+    ];
+    let fileId = '';
+    for(const p of patterns){
+      const m = url.match(p);
+      if(m){ fileId = m[1]; break; }
+    }
+    if(fileId){
+      url = `https://lh3.googleusercontent.com/d/${fileId}`;
+      toast('🔄 已自動轉換 Google Drive 連結','info');
+    } else {
+      toast('無法識別 Google Drive 連結格式','err');
+      return;
+    }
+  }
+
   if(!url.startsWith('http')){ toast('請輸入完整網址（以 http 開頭）','err'); return; }
+
   const name = document.getElementById('newMediaName')?.value.trim() || '媒體_'+Date.now();
   const type = document.getElementById('newMediaType')?.value || 'image';
   try{
